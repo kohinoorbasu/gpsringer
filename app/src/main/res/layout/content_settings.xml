@@ -16,7 +16,8 @@
         android:layout_weight="1"
         android:textSize="6sp"
         android:gravity="top"
-        android:id="@+id/lstSettings">
+        android:id="@+id/lstSettings"
+        android:listSelector="@drawable/list_selector">
     </ListView>
 
 </LinearLayout>

@@ -5,8 +5,8 @@ android {
     buildToolsVersion "25.0.2"
     defaultConfig {
         applicationId "com.example.kohinoor.gpsrinnger"
-        minSdkVersion 15
-        targetSdkVersion 25
+        minSdkVersion 16
+        targetSdkVersion 21
         versionCode 1
         versionName "1.0"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"

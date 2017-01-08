@@ -21,12 +21,17 @@ import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.app.AlertDialog;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
+import android.widget.ListView;
 import android.widget.SeekBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.android.internal.util.Predicate;
 import com.example.kohinoor.gpsrinnger.model.LocationGPSModel;
 
 import java.io.File;
@@ -137,7 +142,8 @@ public class SettingsActivity extends AppCompatActivity implements OnRequestPerm
         writeToFile(data);
     }
 
-    private void btnAddSetting_onClick(View view) {
+    private void btnAddSetting_onClick(View view)
+    {
         // 1. Instantiate an AlertDialog.Builder with its constructor
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
 
@@ -196,6 +202,8 @@ public class SettingsActivity extends AppCompatActivity implements OnRequestPerm
                         saveData(loc.getText().toString(), lat.getText().toString(), lon.getText().toString(), volControl.getProgress());
 
                         dlg.dismiss();
+
+                        refreshListView();
                     }
                 });
             }
@@ -209,8 +217,8 @@ public class SettingsActivity extends AppCompatActivity implements OnRequestPerm
     private void setupAudioSlider()
     {
         final AudioManager audioManager = (AudioManager)getSystemService(Context.AUDIO_SERVICE);
-        int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC);
-        int curVolume = audioManager.getStreamVolume(AudioManager.STREAM_MUSIC);
+        int maxVolume = audioManager.getStreamMaxVolume(AudioManager.STREAM_RING);
+        int curVolume = audioManager.getStreamVolume(AudioManager.STREAM_RING);
         final SeekBar volControl = (SeekBar)_dialog.findViewById(R.id.slideVolBar);
         final TextView volLabel = (TextView)_dialog.findViewById(R.id.txtVol);
         volControl.setMax(maxVolume);
@@ -219,6 +227,7 @@ public class SettingsActivity extends AppCompatActivity implements OnRequestPerm
         volControl.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
             @Override
             public void onStopTrackingTouch(SeekBar arg0) {
+
             }
 
             @Override
@@ -227,11 +236,63 @@ public class SettingsActivity extends AppCompatActivity implements OnRequestPerm
 
             @Override
             public void onProgressChanged(SeekBar arg0, int arg1, boolean arg2) {
-                volLabel.setText("Vol (" + arg1 + ")");
-                audioManager.setStreamVolume(AudioManager.STREAM_MUSIC, arg1, 0);
+                try
+                {
+                    volLabel.setText("Vol (" + arg1 + ")");
+                    audioManager.setStreamVolume(AudioManager.STREAM_RING, arg1, 0);
+                }
+                catch (Exception ex)
+                {
+                    Toast.makeText(getApplicationContext(), ex.getMessage(), Toast.LENGTH_LONG).show();
+                }
             }
         });
     }
+
+    private void refreshListView()
+    {
+        ArrayList<LocationGPSModel> data = readFromFile();
+        RingerViewAdapter binderData = new RingerViewAdapter(this, data);
+        ListView listView = (ListView) findViewById(R.id.lstSettings);
+        listView.setAdapter(binderData);
+        /*
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                Toast.makeText(getApplicationContext(), Integer.toString(parent.getId()), Toast.LENGTH_LONG).show();
+            }
+        });
+        */
+    }
+
+    public void btnCurrentLocation_onClick(View view){
+        getCurrentGeoCoord();
+    }
+
+    public Boolean btnListItemDelete_onClick(View v, final LocationGPSModel dataRow)
+    {
+        try
+        {
+            ArrayList<LocationGPSModel> data = readFromFile();
+            for(int i = data.size() - 1; i >= 0; i--)
+            {
+                if (data.get(i).get_locationName().compareTo(dataRow.get_locationName()) == 0)
+                {
+                    data.remove(i);
+                    writeToFile(data);
+                    break;
+                }
+            }
+            return true;
+        }
+        catch(Exception ex)
+        {
+            Toast.makeText(getApplicationContext(), ex.getMessage(), Toast.LENGTH_LONG).show();
+            return false;
+        }
+    }
+
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -247,11 +308,7 @@ public class SettingsActivity extends AppCompatActivity implements OnRequestPerm
             }
         });
 
-
-    }
-
-    public void btnCurrentLocation_onClick(View view){
-        getCurrentGeoCoord();
+        refreshListView();
     }
 
     @Override
@@ -286,6 +343,5 @@ public class SettingsActivity extends AppCompatActivity implements OnRequestPerm
 
     @Override
     public void onProviderDisabled(String provider) {
-
     }
 }

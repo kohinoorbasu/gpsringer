@@ -6,7 +6,7 @@ import java.io.Serializable;
  * Created by Kohinoor on 12/25/2016.
  */
 
-public class LocationGPSModel implements Serializable{
+public class LocationGPSModel implements Serializable {
 
     public LocationGPSModel()
     {
@@ -52,4 +52,5 @@ public class LocationGPSModel implements Serializable{
     {
         return _vol;
     }
+
 }
